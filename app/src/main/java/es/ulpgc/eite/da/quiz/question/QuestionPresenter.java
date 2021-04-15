@@ -46,8 +46,24 @@ public class QuestionPresenter implements QuestionContract.Presenter {
   @Override
   public void onRestart() {
     Log.e(TAG, "onRestart()");
+    //Se pasa lo mismo que en el start, el estado del quiz y el estado de la respuesta
 
     //TODO: falta implementacion
+    model.setQuizIndex(state.quizIndex);
+    state.question = model.getQuestion();
+    state.option1 = model.getOption1();
+    state.option2 = model.getOption2();
+    state.option3 = model.getOption3();
+
+    //Si estado es que se pulsa una opciín, si es correcta nos quedamos con esa respuesta
+    if(state.optionClicked) {
+      boolean isCorrect = model.isCorrectOption(state.option);
+      view.get().updateReply(isCorrect);
+      //Si no la ponemos en  blanco
+    }else {
+     view.get().resetReply();
+
+    }
 
   }
 
@@ -81,12 +97,29 @@ public class QuestionPresenter implements QuestionContract.Presenter {
 
     //TODO: falta implementacion
 
+    if(option == 1){
+      state.option = 1;
+    }else if(option == 2){
+      state.option =2;
+    }else{
+      state.option = 3;
+    }
+    //Ponemos el estado de boton clickeado como true
+    state.optionClicked = true;
     boolean isCorrect = model.isCorrectOption(option);
     if(isCorrect) {
+      //Si es correcta tenemos que actualizar la respuesta
+      view.get().updateReply(isCorrect);
       state.cheatEnabled=false;
     } else {
       state.cheatEnabled=true;
+
+      view.get().updateReply(isCorrect);
     }
+    //Como ya sabemos si la respuesta es correcta o incorrecta activamos el boton next
+    enableNextButton();
+    //Pongo el el display para que se muestren las respuestas y todo
+    view.get().displayQuestion(state);
 
   }
 
@@ -95,6 +128,17 @@ public class QuestionPresenter implements QuestionContract.Presenter {
     Log.e(TAG, "onNextButtonClicked()");
 
     //TODO: falta implementacion
+    //Para pasar a la siguiente pantalla debo actualizar el quiz
+    model.updateQuizIndex();
+    //Pasando las preguntas y las opciones y deshabilitando la opción de elegir una nueva opción
+    state.question = model.getQuestion();
+    state.option1 = model.getOption1();
+    state.option2 = model.getOption2();
+    state.option3 = model.getOption3();
+    state.optionClicked = false;
+    view.get().resetReply();
+    disableNextButton();
+    onResume();
   }
 
   @Override
@@ -102,11 +146,16 @@ public class QuestionPresenter implements QuestionContract.Presenter {
     Log.e(TAG, "onCheatButtonClicked()");
 
     //TODO: falta implementacion
+
+    String pista= model.getAnswer();
+    QuestionToCheatState savedState = new QuestionToCheatState(savedState);
+
   }
 
   private void passStateToCheatScreen(QuestionToCheatState state) {
 
     //TODO: falta implementacion
+    mediator.getQuestionToCheatState();
 
   }
 
@@ -114,7 +163,7 @@ public class QuestionPresenter implements QuestionContract.Presenter {
 
     //TODO: falta implementacion
 
-    return null;
+    return mediator.getCheatToQuestionState();
   }
 
   private void disableNextButton() {
